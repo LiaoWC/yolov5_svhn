@@ -26,7 +26,7 @@ svhn/
 
 storage.googleapis.com
 runs/*
-data/*
+#data/*
 !data/hyps/*
 !data/images/zidane.jpg
 !data/images/bus.jpg
