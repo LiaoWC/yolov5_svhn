@@ -207,3 +207,4 @@ for i in range(10040,10145):
     with open(f'../svhn/labels/{i}.txt') as f:
         print(f.read().split(' ')[0])
     # print(np.load(f'../svhn/images/{i}.npy'))
+

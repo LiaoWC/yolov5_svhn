@@ -174,25 +174,22 @@ def make_label_txt():
 
 
 def detect_test_filenames():
-    os.mkdir('svhn/test_labels')
+    os.mkdir('svhn/test/labels')
     with open('svhn/test.txt', 'w') as f:
-        for roots, dirs, files in os.walk('svhn/test/images'):
+        for roots, dirs, files in os.walk('svhn/test'):
             for file in files:
-                f.write(f'svhn/test/{file}\n')
-                with open(f'svhn/test_labels/{file.split(".")[0]}.txt', 'w') as ff:
+                f.write(f'svhn/test/images/{file}\n')
+                with open(f'svhn/test/labels/{file.split(".")[0]}.txt', 'w') as ff:
                     ff.write('')
 
 
 if __name__ == "__main__":
-    import os
-
-    os.chdir('/mnt/nfs/work/liaohuang/od/yolov5')
-    print('Fetching training labels ...')
-    fetch_train_labels()
-    print('Train valid split ...')
-    train_valid_split()
-    print('Making annotation file for yolo_v5 ...')
-    make_label_txt()
+    # print('Fetching training labels ...')
+    # fetch_train_labels()
+    # print('Train valid split ...')
+    # train_valid_split()
+    # print('Making annotation file for yolo_v5 ...')
+    # make_label_txt()
     print('Detecting test image filenames...')
     detect_test_filenames()
     print('Done!')
