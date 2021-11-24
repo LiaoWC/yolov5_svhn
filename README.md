@@ -63,6 +63,10 @@ python3 detect.py --weights pretrained.pt  --source svhn/train/example.png --nam
 
 [Colab Notebook](https://colab.research.google.com/drive/1HpMbE9zK_oijZgPaI0Rncuqa0HAGe7b6?usp=sharing)
 
+## Pretrained Model
+
+https://drive.google.com/file/d/1rdJkcAguTLCCun_towdtJZdKpk2egxIw/view?usp=sharing
+
 ## Reference
 
 - preprocess.py is revised from [here](https://github.com/072jiajia/CVDL_HW2/blob/main/prepare.py). 
