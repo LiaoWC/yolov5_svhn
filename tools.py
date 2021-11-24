@@ -11,10 +11,11 @@ from typing import *
 from tqdm import tqdm
 import copy
 
+
 def visualize(json_path, img_id, raw=False, show=True, return_arr=False,
               colors: List[tuple] = None, font_size: float = 0.18, display_thresh=0.,
               save_path='tmp.png'):
-    """
+    """Plot bbox on an image
     :param save_path:
     :param json_path: prediction path
     :param img_id: image id
@@ -56,6 +57,7 @@ def visualize(json_path, img_id, raw=False, show=True, return_arr=False,
 
 
 def visualize_many(json_name, resize: tuple = (100, 150), thresh=0.):
+    """Show many bbox-visualized images."""
     shown_id = [101130, 101138, 101146, 101179, 101194, 10124,
                 101334, 101380, 101412, 101541, 101569, 1005,
                 100000, 100009, 100059, 100113, 100190, 100216]
@@ -160,7 +162,6 @@ def filter_predictions(n_highest=3):
             new_j.append(obj)
     with open(f'thresh_{n_highest}_pred.json', 'w') as f:
         json.dump(new_j, f)
-
 
 # ================ Example Usage ================
 # to_new_pred()

@@ -69,7 +69,3 @@ python3 detect.py --weights pretrained.pt  --source svhn/train/example.png --nam
 - yolo v5: https://github.com/ultralytics/yolov5    
 - SVHN: Yuval Netzer, Tao Wang, Adam Coates, Alessandro Bissacco, Bo Wu, Andrew Y. Ng Reading Digits in Natural Images with Unsupervised Feature Learning NIPS Workshop on Deep Learning and Unsupervised Feature Learning 2011. (http://ufldl.stanford.edu/housenumbers)
 
-
-## TODO
-
-- [ ] Add dataset reference
