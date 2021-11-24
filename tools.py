@@ -9,11 +9,7 @@ from torchvision.utils import make_grid
 import torchvision.transforms as transforms
 from typing import *
 from tqdm import tqdm
-
 import copy
-
-os.chdir('/mnt/nfs/work/liaohuang/od/Mine')
-
 
 def visualize(json_path, img_id, raw=False, show=True, return_arr=False,
               colors: List[tuple] = None, font_size: float = 0.18, display_thresh=0.,
@@ -84,50 +80,27 @@ def visualize_many(json_name, resize: tuple = (100, 150), thresh=0.):
     plt.show()
 
 
-# img = cv2.imread('data/train/10002.png')
-# plt.imshow(img)
-# plt.show()
-# n = np.load('data/train/10002.npy')
-# n
-# img.shape
+# def to_new_pred():
+#     with open('prediction.json', 'r') as f:
+#         p = json.load(f)
+#     new_p = []
+#     for item in p:
+#         # if item['score'] < 0.4:
+#         #     continue
+#         new_item = {}
+#         for key in item:
+#             if key == 'bbox':
+#                 # x1, y1, x2, y2 => x1, y1, w, h => y1, x1, h, w
+#                 old_bbox = item[key]
+#                 new_bbox = [old_bbox[0], old_bbox[1], old_bbox[2] - old_bbox[0], old_bbox[3] - old_bbox[1]]
+#                 new_bbox = [new_bbox[1], new_bbox[0], new_bbox[3], new_bbox[2]]
+#                 new_item[key] = new_bbox
+#             else:
+#                 new_item[key] = item[key]
+#         new_p.append(new_item)
 #
-# import h5py
-#
-# dsFile = h5py.File('data/train/digitStruct.mat', 'r')
-# d = dsFile['digitStruct']
-# ref = d['name'][1][0]
-# dsFile[ref][2]
-
-
-def to_new_pred():
-    with open('prediction.json', 'r') as f:
-        p = json.load(f)
-    new_p = []
-    for item in p:
-        # if item['score'] < 0.4:
-        #     continue
-        new_item = {}
-        for key in item:
-            if key == 'bbox':
-                # x1, y1, x2, y2 => x1, y1, w, h => y1, x1, h, w
-                old_bbox = item[key]
-                new_bbox = [old_bbox[0], old_bbox[1], old_bbox[2] - old_bbox[0], old_bbox[3] - old_bbox[1]]
-                new_bbox = [new_bbox[1], new_bbox[0], new_bbox[3], new_bbox[2]]
-                new_item[key] = new_bbox
-            else:
-                new_item[key] = item[key]
-        new_p.append(new_item)
-
-    with open('new_p.json', 'w') as file:
-        json.dump(new_p, file)
-
-
-# to_new_pred()
-
-# visualize_many(json_name='new_p.json', resize=(180, 128))
-visualize_many(json_name='prediction.json', resize=(128, 128), thresh=0.)
-# visualize_many(json_name='prediction.json', resize=(128, 128), thresh=0.2)
-# visualize_many(json_name='thresh_3_pred.json', resize=(128, 128))
+#     with open('new_p.json', 'w') as file:
+#         json.dump(new_p, file)
 
 
 def plot_save_testing_img(save_n, save_path, json_path, test_img_path, display_thresh=0., font_size=2.):
@@ -150,61 +123,55 @@ def plot_save_testing_img(save_n, save_path, json_path, test_img_path, display_t
                       save_path=os.path.join(save_path, file))
 
 
-plot_save_testing_img(save_n=25,
-                      # json_path='thresh_3_pred.json',
-                      json_path='prediction.json',
-                      save_path='/mnt/nfs/work/liaohuang/od/Mine/with_bbox/',
-                      test_img_path='/mnt/nfs/work/liaohuang/od/Mine/data/test',
-                      display_thresh=0.,
-                      font_size=1.)
+def filter_predictions(n_highest=3):
+    """Make a new prediction.json by filter the confidence score."
+    :param n_highest: Keep how many bbox.
+    """
+    # Get all scores
+    with open('prediction.json', 'r') as f:
+        j = json.load(f)
+    appeared = []
+    id_scores_dict: Dict[int, List[float]] = {}
+    for obj in j:
+        img_id = int(obj['image_id'])
+        score = float(obj['score'])
+        if img_id in appeared:
+            id_scores_dict[img_id].append(score)
+        else:
+            id_scores_dict[img_id] = [score]
+            appeared.append(img_id)
+    # Calculate each id's score threshold
+    # 3 highest scores
+    n_highest = 3
+    id_thresh_dict: Dict[int, float] = {}
+    for img_id in id_scores_dict:
+        scores: List = id_scores_dict[img_id]
+        scores.sort(reverse=True)
+        thresh: float = scores[min(n_highest - 1, len(scores) - 1)]
+        id_thresh_dict[img_id] = thresh
+    # Make a new json
+    new_j = []
+    for obj in j:
+        img_id = int(obj['image_id'])
+        score = float(obj['score'])
+        if score < id_thresh_dict[img_id]:
+            continue
+        else:
+            new_j.append(obj)
+    with open(f'thresh_{n_highest}_pred.json', 'w') as f:
+        json.dump(new_j, f)
 
-# Get all scores
-with open('prediction.json', 'r') as f:
-    j = json.load(f)
-appeared = []
-id_scores_dict: Dict[int, List[float]] = {}
-for obj in j:
-    img_id = int(obj['image_id'])
-    score = float(obj['score'])
-    if img_id in appeared:
-        id_scores_dict[img_id].append(score)
-    else:
-        id_scores_dict[img_id] = [score]
-        appeared.append(img_id)
-# Calculate each id's score threshold
-# 3 highest scores
-n_highest = 5
-id_thresh_dict: Dict[int, float] = {}
-for img_id in id_scores_dict:
-    scores: List = id_scores_dict[img_id]
-    scores.sort(reverse=True)
-    thresh: float = scores[min(n_highest - 1, len(scores) - 1)]
-    id_thresh_dict[img_id] = thresh
-# Make a new json
-new_j = []
-for obj in j:
-    img_id = int(obj['image_id'])
-    score = float(obj['score'])
-    if score < id_thresh_dict[img_id]:
-        continue
-    else:
-        new_j.append(obj)
-with open('thresh_3_pred.json', 'w') as f:
-    json.dump(new_j, f)
-    #
 
-#
-# with open('thresh_3_pred.json', 'r') as f:
-#     jj = json.load(f)
-#
-# for ooo in jj:
-#     print(ooo['image_id'])
-
-for i in range(10040,10145):
-    # a = np.array(Image.open(f'data/train/{i}.png'))
-    # plt.imshow(a)
-    # plt.show()
-    with open(f'../svhn/labels/{i}.txt') as f:
-        print(f.read().split(' ')[0])
-    # print(np.load(f'../svhn/images/{i}.npy'))
-
+# ================ Example Usage ================
+# to_new_pred()
+# visualize_many(json_name='new_p.json', resize=(180, 128))
+# visualize_many(json_name='prediction.json', resize=(128, 128), thresh=0.)
+# visualize_many(json_name='prediction.json', resize=(128, 128), thresh=0.2)
+# visualize_many(json_name='thresh_3_pred.json', resize=(128, 128))
+# plot_save_testing_img(save_n=25,
+#                       # json_path='thresh_3_pred.json',
+#                       json_path='prediction.json',
+#                       save_path=?,
+#                       test_img_path=?,
+#                       display_thresh=0.,
+#                       font_size=1.)
